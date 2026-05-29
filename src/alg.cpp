@@ -47,25 +47,28 @@ void PMTree::Cleanup(Node* ptr) {
   delete ptr;
 }
 
+static void CollectPerms(PMTree::Node* cur, std::vector<char>& buf,
+                         std::vector<std::vector<char>>& out,
+                         int lvl, int limit) {
+  if (lvl == limit) {
+    out.push_back(buf);
+    return;
+  }
+  for (PMTree::Node* nxt : cur->links) {
+    buf.push_back(nxt->sym);
+    CollectPerms(nxt, buf, out, lvl + 1, limit);
+    buf.pop_back();
+  }
+}
+
 std::vector<std::vector<char>> getAllPerms(PMTree& obj) {
   std::vector<std::vector<char>> out;
   std::vector<char> track;
   int total = static_cast<int>(obj.base.size());
 
-  for (Node* first : obj.top->links) {
+  for (PMTree::Node* first : obj.top->links) {
     track.push_back(first->sym);
-    std::function<void(Node*, int)> dfs = [&](Node* cur, int lvl) {
-      if (lvl == total) {
-        out.push_back(track);
-        return;
-      }
-      for (Node* nxt : cur->links) {
-        track.push_back(nxt->sym);
-        dfs(nxt, lvl + 1);
-        track.pop_back();
-      }
-    };
-    dfs(first, 1);
+    CollectPerms(first, track, out, 1, total);
     track.pop_back();
   }
   return out;
@@ -89,7 +92,7 @@ std::vector<char> getPerm2(PMTree& obj, int pos) {
 
   std::vector<char> result;
   int remainder = pos - 1;
-  Node* current = obj.top;
+  PMTree::Node* current = obj.top;
 
   for (int step = 0; step < total; ++step) {
     size_t block = fact(total - step - 1);
