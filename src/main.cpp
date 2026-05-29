@@ -7,67 +7,56 @@
 #include <vector>
 #include "tree.h"
 
-void PrintSequence(const std::vector<char>& seq) {
-  for (char c : seq) {
-    std::cout << c;
-  }
+void PrintSeq(const std::vector<char>& seq) {
+  for (char c : seq) std::cout << c;
 }
 
 int main() {
- 
-  std::vector<char> demo_input = { '1', '2', '3' };
-  PMTree demo_tree(demo_input);
+  std::vector<char> init = {'1', '2', '3'};
+  PMTree example(init);
 
-  std::cout << "All permutations for {1,2,3}:\n";
-  auto all_results = GetAllPermutations(demo_tree);
-  for (const auto& perm : all_results) {
-    PrintSequence(perm);
+  auto variants = getAllPerms(example);
+  for (const auto& seq : variants) {
+    PrintSeq(seq);
     std::cout << "  ";
   }
   std::cout << "\n\n";
 
-  std::cout << "Permutation #1 (slow): ";
-  PrintSequence(GetPermutationByIndexSlow(demo_tree, 1));
+  std::cout << "getPerm1(1): ";
+  PrintSeq(getPerm1(example, 1));
   std::cout << "\n";
 
-  std::cout << "Permutation #2 (fast): ";
-  PrintSequence(GetPermutationByIndexFast(demo_tree, 2));
+  std::cout << "getPerm2(2): ";
+  PrintSeq(getPerm2(example, 2));
   std::cout << "\n\n";
 
   std::cout << "n;getAllPerms(s);getPerm1(s);getPerm2(s)\n";
 
-  for (int alphabet_size = 3; alphabet_size <= 8; ++alphabet_size) {
-    std::vector<char> input_chars;
-    for (int i = 0; i < alphabet_size; ++i) {
-      input_chars.push_back(static_cast<char>('a' + i));
-    }
-    PMTree benchmark_tree(input_chars);
+  for (int n = 3; n <= 8; ++n) {
+    std::vector<char> letters;
+    for (int i = 0; i < n; ++i) letters.push_back('a' + i);
+    PMTree tree(letters);
 
-    std::mt19937 rng_engine(42);
-    std::uniform_int_distribution<> dist(1, static_cast<int>(CalculateFactorial(alphabet_size)));
-    int random_index = dist(rng_engine);
+    std::mt19937 gen(42);
+    std::uniform_int_distribution<> dist(1, static_cast<int>(fact(n)));
+    int target = dist(gen);
 
-    auto start_all = std::chrono::high_resolution_clock::now();
-    GetAllPermutations(benchmark_tree);
-    auto end_all = std::chrono::high_resolution_clock::now();
+    auto t0 = std::chrono::high_resolution_clock::now();
+    getAllPerms(tree);
+    auto t1 = std::chrono::high_resolution_clock::now();
+    getPerm1(tree, target);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    getPerm2(tree, target);
+    auto t3 = std::chrono::high_resolution_clock::now();
 
-    auto start_slow = std::chrono::high_resolution_clock::now();
-    GetPermutationByIndexSlow(benchmark_tree, random_index);
-    auto end_slow = std::chrono::high_resolution_clock::now();
+    double d1 = std::chrono::duration<double>(t1 - t0).count();
+    double d2 = std::chrono::duration<double>(t2 - t1).count();
+    double d3 = std::chrono::duration<double>(t3 - t2).count();
 
-    auto start_fast = std::chrono::high_resolution_clock::now();
-    GetPermutationByIndexFast(benchmark_tree, random_index);
-    auto end_fast = std::chrono::high_resolution_clock::now();
-
-    double time_all = std::chrono::duration<double>(end_all - start_all).count();
-    double time_slow = std::chrono::duration<double>(end_slow - start_slow).count();
-    double time_fast = std::chrono::duration<double>(end_fast - start_fast).count();
-
-    std::cout << alphabet_size << ";"
-      << std::fixed << std::setprecision(6) << time_all << ";"
-      << time_slow << ";"
-      << time_fast << std::endl;
+    std::cout << n << ";"
+              << std::fixed << std::setprecision(6) << d1 << ";"
+              << d2 << ";"
+              << d3 << std::endl;
   }
-
   return 0;
 }
