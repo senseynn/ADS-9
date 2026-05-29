@@ -5,31 +5,30 @@
 #include <vector>
 
 class PMTree {
-public:
-  struct TreeNode {
-    char symbol;
-    std::vector<TreeNode*> branches;
-    explicit TreeNode(char val) : symbol(val) {}
+ public:
+  struct Node {
+    char sym;
+    std::vector<Node*> links;
+    explicit Node(char s) : sym(s) {}
   };
 
-  TreeNode* root_node;
-  std::vector<char> source_elements;
+  Node* top;
+  std::vector<char> base;
 
-  explicit PMTree(const std::vector<char>& input_data);
+  explicit PMTree(const std::vector<char>& src);
   ~PMTree();
 
   PMTree(const PMTree&) = delete;
   PMTree& operator=(const PMTree&) = delete;
 
-private:
-  TreeNode* BuildSubtree(const std::vector<char>& remaining);
-  void CleanupTree(TreeNode* node_ptr);
+ private:  // NOLINT
+  Node* BuildSubtree(const std::vector<char>& rest);
+  void Cleanup(Node* ptr);
 };
 
-std::vector<std::vector<char>> GetAllPermutations(PMTree& tree_obj);
-std::vector<char> GetPermutationByIndexSlow(PMTree& tree_obj, int index);
-std::vector<char> GetPermutationByIndexFast(PMTree& tree_obj, int index);
-
-size_t CalculateFactorial(int value);
+std::vector<std::vector<char>> getAllPerms(PMTree& obj);
+std::vector<char> getPerm1(PMTree& obj, int pos);
+std::vector<char> getPerm2(PMTree& obj, int pos);
+size_t fact(int n);
 
 #endif  // INCLUDE_TREE_H_
